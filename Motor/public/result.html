@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motor de Búsqueda</title>
+    <link rel="stylesheet" href="result.css"> <!-- Aquí importamos el archivo CSS -->
+</head>
+
+<body>
+    <div class="container">
+        <div class="headerSearch">
+            <!--Topleft Logo-->
+            <div class="logo"><a href="./index.html"><img
+                        src="http://img.deusm.com/informationweek/2015/09/1322015/logo_420_color_2x.png"></a>
+            </div>
+            <!--Searchbar-->
+            <form class="searchForm">
+                <input class="searchBar" type="text" id="searchInput" value="" autocomplete="off" autofocus="onload">
+                </datalist>
+            </form>
+        </div>
+        <div class="headerNav">
+            <ul>
+                <li><a href="#">All</a></li>
+                <li><a href="#">Videos</a></li>
+                <li><a href="#">News</a></li>
+                <li><a href="#">Shopping</a></li>
+                <li><a href="#">Maps</a></li>
+                <li><a href="#">More</a></li>
+                <li><a href="#">Search tools</a></li>
+            </ul>
+        </div>
+        <div class="container2" id="resultsNum">
+        </div>
+
+        <div class="searchResults">
+            <ul id="resultsContainer">
+            </ul>
+        </div>
+        <script>
+            document.getElementById("searchInput").addEventListener("keydown", function (event) {
+                if (event.keyCode === 13) { // Si la tecla presionada es "Enter"
+                    event.preventDefault(); // Evitar el comportamiento predeterminado del formulario
+                    var searchQuery = document.getElementById("searchInput").value;
+                    mostrarResultados();
+                    window.location.href = "./result.html?search=" + encodeURIComponent(searchQuery);
+                }
+            });
+
+            // Función para mostrar los resultados de la consulta
+            function mostrarResultados() {
+                var urlParams = new URLSearchParams(window.location.search);
+                var searchQuery = urlParams.get('search');
+                document.getElementById("searchInput").value = searchQuery;
+
+
+                // Realizar la solicitud al servidor
+                fetch(`http://localhost:3000/consultar`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'palabra': searchQuery
+                    }
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Error al realizar la consulta');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        const numeroResultadosDiv = document.getElementById('resultsNum');
+                        const x = data.archivos.length;
+                        if (x == 0) numeroResultadosDiv.textContent = `No se encontraron resultados`;
+                        else if (x == 1) numeroResultadosDiv.textContent = `Se encontró ${x} resultado`;
+                        else numeroResultadosDiv.textContent = `Se encontraron ${x} resultados`;
+
+                        // Mostrar los resultados en la página
+                        const resultadosDiv = document.getElementById('resultsContainer');
+                        console.log(data.archivos)
+                        data.archivos.forEach((archivo) => {
+                            const archivoElemento = document.createElement('div');
+                            archivoElemento.classList.add('searchResultsItem');
+
+                            const nombreElemento = document.createElement('li');
+                            const enlaceElemento = document.createElement('a');
+                            enlaceElemento.href = `#`;
+                            enlaceElemento.textContent = `${archivo.nombre} - ${archivo.pesoPageRank}`;
+                            nombreElemento.appendChild(enlaceElemento);
+
+                            const linkElemento = document.createElement('p');
+                            linkElemento.classList.add('resultAddr');
+                            linkElemento.textContent = `http://ejemplo.com/${archivo.nombre}`;
+
+                            const fechaElemento = document.createElement('span');
+                            fechaElemento.textContent = "03/01/2022 - ";
+
+                            const descripcionElemento = document.createElement('p');
+                            descripcionElemento.textContent = `Descripción del ${archivo.nombre} Descripción del ${archivo.nombre} Descripción del ${archivo.nombre} Descripción del ${archivo.nombre} Descripción del ${archivo.nombre} Descripción del ${archivo.nombre}`;
+
+                            descripcionElemento.prepend(fechaElemento);
+
+                            archivoElemento.appendChild(nombreElemento);
+                            archivoElemento.appendChild(linkElemento);
+                            archivoElemento.appendChild(descripcionElemento);
+
+                            resultadosDiv.appendChild(archivoElemento);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        // Manejar el error si ocurre
+                    });
+            }
+            // Mostrar los resultados cuando la página se cargue
+            window.onload = function () {
+                mostrarResultados();
+            };
+        </script>
+</body>
+
+</html>

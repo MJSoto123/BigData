@@ -1,0 +1,4 @@
+file1 15 file1 file2
+file2 7 file3
+file3 19 file1
+file4 11 file1
